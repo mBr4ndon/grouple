@@ -12,3 +12,209 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName String  @map("first_name")
+  lastName  String  @map("last_name")
+  clerkId   String  @unique @map("clerk_id")
+  image     String?
+  stripeId  String? @map("stripe_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  group      Group[]
+  membership Member[]
+  posts      Post[]
+  likes      Like[]
+  comments   Comment[]
+  message    Message[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id     String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  price  Int?
+  active Boolean @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  Group   Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String? @map("group_id") @db.Uuid
+
+  @@map("subscriptions")
+}
+
+model Group {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String         @unique
+  category        String
+  thumbnail       String?
+  description     String?
+  gallery         String[]
+  jsonDescription String?        @map("json_description")
+  htmlDescription String?        @map("html_description")
+  icon            String?
+  member          Member[]
+  channel         Channel[]
+  privacy         GROUP_PRIVACY  @default(PRIVATE)
+  active          Boolean        @default(false)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  User            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String         @map("user_id") @db.Uuid
+  courses         Course[]
+  affiliate       Affiliate?
+  domain          String?
+  subscription    Subscription[]
+
+  @@map("groups")
+}
+
+model Member {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @map("user_id") @db.Uuid
+  Group     Group?   @relation(fields: [groupId], references: [id])
+  groupId   String?  @map("group_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, groupId])
+  @@map("members")
+}
+
+model Post {
+  id          String    @id @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  title       String?
+  htmlContent String?   @map("html_content")
+  jsonContent String?   @map("json_content")
+  content     String
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String    @map("author_id") @db.Uuid
+  likes       Like[]
+  comments    Comment[]
+  channel     Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelId   String    @map("channel_id") @db.Uuid
+
+  @@map("posts")
+}
+
+model Like {
+  id        String   @id @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String   @map("post_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+
+  @@map("likes")
+}
+
+model Comment {
+  id        String    @id @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  content   String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String    @map("post_id") @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String    @map("user_id") @db.Uuid
+  replied   Boolean?  @default(false)
+  //self relation 1 to many for comments
+  reply     Comment[] @relation(name: "CommentToComment")
+  Comment   Comment?  @relation(name: "CommentToComment", fields: [commentId], references: [id])
+  commentId String?   @db.Uuid
+
+  @@map("comments")
+}
+
+model Channel {
+  id        String   @id @db.Uuid
+  name      String
+  icon      String
+  posts     Post[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  Group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String?  @map("group_id") @db.Uuid
+
+  @@map("channels")
+}
+
+model Course {
+  id          String   @id @db.Uuid
+  name        String
+  thumbnail   String
+  published   Boolean  @default(false)
+  privacy     String
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  Group       Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId     String?  @map("group_id") @db.Uuid
+  modules     Module[]
+
+  @@map("courses")
+}
+
+model Module {
+  id        String    @id @db.Uuid
+  Course    Course?   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String?   @map("course_id") @db.Uuid
+  title     String
+  section   Section[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("modules")
+}
+
+model Section {
+  id          String   @id @db.Uuid
+  name        String   @default("New Section")
+  icon        String   @default("doc")
+  complete    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  Module      Module?  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId    String?  @map("module_id") @db.Uuid
+  content     String?
+  htmlContent String?  @map("html_content")
+  jsonContent String?  @map("json_content")
+
+  @@map("sections")
+}
+
+model Affiliate {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  Group     Group?   @relation(fields: [groupId], references: [id])
+  groupId   String?  @unique @map("group_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("affiliates")
+}
+
+model Message {
+  id         String   @id @db.Uuid
+  message    String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  sender     User?    @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId   String?  @map("sender_id") @db.Uuid
+  recieverId String?  @map("receiver_id") @db.Uuid
+
+  @@map("messages")
+}
+
+enum GROUP_PRIVACY {
+  PUBLIC
+  PRIVATE
+}
