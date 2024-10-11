@@ -16,10 +16,13 @@ interface Props {
 }
 
 const GroupList = dynamic(
-    () => import("@/components/global/group-list-slider").then(component => component.GroupListSlider),
+    () =>
+        import("@/components/global/group-list-slider").then(
+            (component) => component.GroupListSlider,
+        ),
     {
-        ssr: false
-    }
+        ssr: false,
+    },
 )
 
 const PaymentForm = ({ userId, affiliate, stripeId }: Props) => {
