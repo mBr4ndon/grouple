@@ -1,5 +1,10 @@
 import { type AuthFormProps, SIGN_IN_FORM, SIGN_UP_FORM } from "./forms"
-import { GROUP_PAGE_MENU, type GroupMenuProps, LANDING_PAGE_MENU, type MenuProps } from "./menus"
+import {
+    GROUP_PAGE_MENU,
+    type GroupMenuProps,
+    LANDING_PAGE_MENU,
+    type MenuProps,
+} from "./menus"
 import {
     CREATE_GROUP_PLACEHOLDER,
     type CreateGroupPlaceholderProps,

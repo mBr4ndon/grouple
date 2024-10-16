@@ -2,6 +2,7 @@
 
 import { createGroupSchema } from "@/components/forms/create-group/schema"
 import { client } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
 import { v4 as uuidv4 } from "uuid"
 import { z } from "zod"
 import { onAuthenticatedUser } from "./auth"
@@ -294,87 +295,88 @@ export const onSearchGroups = async (
     }
 }
 
-// export const onUpDateGroupSettings = async (
-//   groupid: string,
-//   type:
-//     | "IMAGE"
-//     | "ICON"
-//     | "NAME"
-//     | "DESCRIPTION"
-//     | "JSONDESCRIPTION"
-//     | "HTMLDESCRIPTION",
-//   content: string,
-//   path: string,
-// ) => {
-//   try {
-//     if (type === "IMAGE") {
-//       await client.group.update({
-//         where: {
-//           id: groupid,
-//         },
-//         data: {
-//           thumbnail: content,
-//         },
-//       })
-//     }
-//     if (type === "ICON") {
-//       await client.group.update({
-//         where: {
-//           id: groupid,
-//         },
-//         data: {
-//           icon: content,
-//         },
-//       })
-//       console.log("uploaded image")
-//     }
-//     if (type === "DESCRIPTION") {
-//       await client.group.update({
-//         where: {
-//           id: groupid,
-//         },
-//         data: {
-//           description: content,
-//         },
-//       })
-//     }
-//     if (type === "NAME") {
-//       await client.group.update({
-//         where: {
-//           id: groupid,
-//         },
-//         data: {
-//           name: content,
-//         },
-//       })
-//     }
-//     if (type === "JSONDESCRIPTION") {
-//       await client.group.update({
-//         where: {
-//           id: groupid,
-//         },
-//         data: {
-//           jsonDescription: content,
-//         },
-//       })
-//     }
-//     if (type === "HTMLDESCRIPTION") {
-//       await client.group.update({
-//         where: {
-//           id: groupid,
-//         },
-//         data: {
-//           htmlDescription: content,
-//         },
-//       })
-//     }
-//     revalidatePath(path)
-//     return { status: 200 }
-//   } catch (error) {
-//     console.log(error)
-//     return { status: 400 }
-//   }
-// }
+export const onUpdateGroupSettings = async (
+    groupId: string,
+    type:
+        | "IMAGE"
+        | "ICON"
+        | "NAME"
+        | "DESCRIPTION"
+        | "JSONDESCRIPTION"
+        | "HTMLDESCRIPTION",
+    content: string,
+    path: string,
+) => {
+    try {
+        if (type === "IMAGE") {
+            await client.group.update({
+                where: {
+                    id: groupId,
+                },
+                data: {
+                    thumbnail: content,
+                },
+            })
+        }
+        if (type === "ICON") {
+            await client.group.update({
+                where: {
+                    id: groupId,
+                },
+                data: {
+                    icon: content,
+                },
+            })
+            console.log("uploaded image")
+        }
+        if (type === "DESCRIPTION") {
+            await client.group.update({
+                where: {
+                    id: groupId,
+                },
+                data: {
+                    description: content,
+                },
+            })
+        }
+        if (type === "NAME") {
+            await client.group.update({
+                where: {
+                    id: groupId,
+                },
+                data: {
+                    name: content,
+                },
+            })
+        }
+        if (type === "JSONDESCRIPTION") {
+            await client.group.update({
+                where: {
+                    id: groupId,
+                },
+                data: {
+                    jsonDescription: content,
+                },
+            })
+        }
+        if (type === "HTMLDESCRIPTION") {
+            await client.group.update({
+                where: {
+                    id: groupId,
+                },
+                data: {
+                    htmlDescription: content,
+                },
+            })
+        }
+
+        revalidatePath(path)
+        return { status: 200 }
+    } catch (error) {
+        console.log(error)
+        return { status: 400 }
+    }
+}
 
 // export const onGetExploreGroup = async (category: string, paginate: number) => {
 //   try {
@@ -461,13 +463,13 @@ export const onSearchGroups = async (
 // }
 
 // export const onUpdateGroupGallery = async (
-//   groupid: string,
+//   groupId: string,
 //   content: string,
 // ) => {
 //   try {
 //     const mediaLimit = await client.group.findUnique({
 //       where: {
-//         id: groupid,
+//         id: groupId,
 //       },
 //       select: {
 //         gallery: true,
@@ -477,7 +479,7 @@ export const onSearchGroups = async (
 //     if (mediaLimit && mediaLimit?.gallery.length < 6) {
 //       await client.group.update({
 //         where: {
-//           id: groupid,
+//           id: groupId,
 //         },
 //         data: {
 //           gallery: {
@@ -485,7 +487,7 @@ export const onSearchGroups = async (
 //           },
 //         },
 //       })
-//       revalidatePath(`/about/${groupid}`)
+//       revalidatePath(`/about/${groupId}`)
 //       return { status: 200 }
 //     }
 
@@ -498,12 +500,12 @@ export const onSearchGroups = async (
 //   }
 // }
 
-// export const onJoinGroup = async (groupid: string) => {
+// export const onJoinGroup = async (groupId: string) => {
 //   try {
 //     const user = await onAuthenticatedUser()
 //     const member = await client.group.update({
 //       where: {
-//         id: groupid,
+//         id: groupId,
 //       },
 //       data: {
 //         member: {
@@ -521,11 +523,11 @@ export const onSearchGroups = async (
 //   }
 // }
 
-// export const onGetAffiliateLink = async (groupid: string) => {
+// export const onGetAffiliateLink = async (groupId: string) => {
 //   try {
 //     const affiliate = await client.affiliate.findUnique({
 //       where: {
-//         groupId: groupid,
+//         groupId: groupId,
 //       },
 //       select: {
 //         id: true,
@@ -763,7 +765,7 @@ export const onSearchGroups = async (
 //   }
 // }
 
-// export const onAddCustomDomain = async (groupid: string, domain: string) => {
+// export const onAddCustomDomain = async (groupId: string, domain: string) => {
 //   try {
 //       const addDomainHttpUrl = `https://api.vercel.com/v10/projects/${process.env.PROJECT_ID_VERCEL}/domains?teamId=${process.env.TEAM_ID_VERCEL}`
 //       //we now insert domain into our vercel project
@@ -784,7 +786,7 @@ export const onSearchGroups = async (
 //       if (response) {
 //           const newDomain = await client.group.update({
 //               where: {
-//                   id: groupid,
+//                   id: groupId,
 //               },
 //               data: {
 //                   domain,
