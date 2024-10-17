@@ -221,7 +221,6 @@ export const useGroupSettings = (groupId: string) => {
                     })
                 }
             }
-            console.log("DESCRIPTION")
 
             if (values.description) {
                 const updated = await onUpdateGroupSettings(
