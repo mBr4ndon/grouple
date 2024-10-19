@@ -4,6 +4,9 @@ import { redirect } from "next/navigation"
 
 const CompleteSigIn = async () => {
     const user = await currentUser()
+
+    console.log("-->", user)
+
     if (!user) {
         return redirect("/sign-in")
     }

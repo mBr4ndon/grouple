@@ -1,6 +1,7 @@
 "use client"
 
 import {
+    onGetExploreGroup,
     onGetGroupInfo,
     onSearchGroups,
     onUpdateGroupSettings,
@@ -8,14 +9,22 @@ import {
 import { groupSettingsSchema } from "@/components/forms/group-settings/schema"
 import { upload } from "@/lib/updloadcare"
 import { supabaseClient } from "@/lib/utils"
+import {
+    onClearList,
+    onInfiniteScroll,
+} from "@/redux/slices/infinite-scroll-slice"
 import { onOnline } from "@/redux/slices/online-member-slice"
-import { onClearSearch, onSearch } from "@/redux/slices/search-slice"
+import {
+    GroupStateProps,
+    onClearSearch,
+    onSearch,
+} from "@/redux/slices/search-slice"
 import { AppDispatch } from "@/redux/store"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { JSONContent } from "novel"
-import { useEffect, useState } from "react"
+import { useEffect, useLayoutEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useDispatch } from "react-redux"
 import { toast } from "sonner"
@@ -30,7 +39,6 @@ export const useGroupChatOnline = (userId: string) => {
         channel
             .on("presence", { event: "sync" }, () => {
                 const state: any = channel.presenceState()
-                console.log(state)
                 for (const user in state) {
                     dispatch(
                         onOnline({
@@ -193,8 +201,8 @@ export const useGroupSettings = (groupId: string) => {
                     })
                 }
             }
-            if (values.icon && values.icon.length > 0) {
-                console.log("icon")
+
+            if (values.icon && values.icon.length) {
                 const uploaded = await upload.uploadFile(values.icon[0])
                 const updated = await onUpdateGroupSettings(
                     groupId,
@@ -283,47 +291,47 @@ export const useGroupSettings = (groupId: string) => {
     }
 }
 
-// export const useGroupList = (query: string) => {
-//     const { data } = useQuery({
-//         queryKey: [query],
-//     })
+export const useGroupList = (query: string) => {
+    const { data } = useQuery({
+        queryKey: [query],
+    })
 
-//     const dispatch: AppDispatch = useDispatch()
+    const dispatch: AppDispatch = useDispatch()
 
-//     useLayoutEffect(() => {
-//         dispatch(onClearList({ data: [] }))
-//     }, [])
+    useLayoutEffect(() => {
+        dispatch(onClearList({ data: [] }))
+    }, [])
 
-//     const { groups, status } = data as {
-//         groups: GroupStateProps[]
-//         status: number
-//     }
+    const { groups, status } = data as {
+        groups: GroupStateProps[]
+        status: number
+    }
 
-//     return { groups, status }
-// }
+    return { groups, status }
+}
 
-// export const useExploreSlider = (query: string, paginate: number) => {
-//     const [onLoadSlider, setOnLoadSlider] = useState<boolean>(false)
-//     const dispatch: AppDispatch = useDispatch()
-//     const { data, refetch, isFetching, isFetched } = useQuery({
-//         queryKey: ["fetch-group-slides"],
-//         queryFn: () => onGetExploreGroup(query, paginate | 0),
-//         enabled: false,
-//     })
+export const useExploreSlider = (query: string, paginate: number) => {
+    const [onLoadSlider, setOnLoadSlider] = useState<boolean>(false)
+    const dispatch: AppDispatch = useDispatch()
+    const { data, refetch, isFetching, isFetched } = useQuery({
+        queryKey: ["fetch-group-slides"],
+        queryFn: () => onGetExploreGroup(query, paginate | 0),
+        enabled: false,
+    })
 
-//     if (isFetched && data?.status === 200 && data.groups) {
-//         dispatch(onInfiniteScroll({ data: data.groups }))
-//     }
+    if (isFetched && data?.status === 200 && data.groups) {
+        dispatch(onInfiniteScroll({ data: data.groups }))
+    }
 
-//     useEffect(() => {
-//         setOnLoadSlider(true)
-//         return () => {
-//             onLoadSlider
-//         }
-//     }, [])
+    useEffect(() => {
+        setOnLoadSlider(true)
+        return () => {
+            onLoadSlider
+        }
+    }, [])
 
-//     return { refetch, isFetching, data, onLoadSlider }
-// }
+    return { refetch, isFetching, data, onLoadSlider }
+}
 
 // export const useGroupInfo = () => {
 //     const { data } = useQuery({

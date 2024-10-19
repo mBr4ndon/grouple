@@ -222,8 +222,8 @@ export const useGoogleAuth = () => {
                 redirectUrl: "/callback",
                 redirectUrlComplete: "/callback/sign-in",
             })
-        } catch (error) {
-            console.error(error)
+        } catch (error: any) {
+            console.error(error.message)
         }
     }
 
@@ -238,8 +238,8 @@ export const useGoogleAuth = () => {
                 redirectUrl: "/callback",
                 redirectUrlComplete: "/callback/complete",
             })
-        } catch (error) {
-            console.error(error)
+        } catch (error: any) {
+            console.error(error.message)
         }
     }
 
